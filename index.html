@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Earth Overshoot Day Bingo 🌏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #0a4a2e;
+    --green-mid: #1a7a4a;
+    --green-light: #2ebb72;
+    --green-pale: #e8f7ee;
+    --green-card: #f2fbf5;
+    --gold: #c9a227;
+    --white: #fafdf9;
+    --text: #0d1f14;
+    --text-muted: #5a7a64;
+    --radius: 12px;
+    --cell-size: min(17vw, 80px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--white);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 40px;
+  }
+
+  header {
+    width: 100%;
+    background: var(--green-dark);
+    padding: 18px 20px 14px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 20px,
+      rgba(255,255,255,0.02) 20px, rgba(255,255,255,0.02) 40px
+    );
+  }
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--green-light);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .header-title {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 900;
+    color: white;
+    line-height: 1.1;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .card-wrapper {
+    padding: 16px;
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .card-id-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 2px;
+  }
+  .card-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+  .instructions {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .bingo-letters {
+    display: grid;
+    grid-template-columns: repeat(5, var(--cell-size));
+    gap: 4px;
+    justify-content: center;
+  }
+  .b-letter {
+    width: var(--cell-size);
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--green-mid);
+  }
+
+  .bingo-grid {
+    display: grid;
+    grid-template-columns: repeat(5, var(--cell-size));
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border-radius: 8px;
+    border: 1.5px solid #c8e8d4;
+    background: var(--green-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: clamp(7.5px, 1.9vw, 10px);
+    line-height: 1.3;
+    padding: 4px;
+    color: var(--text);
+    cursor: pointer;
+    transition: transform 0.1s, background 0.15s, border-color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .cell:active { transform: scale(0.93); }
+  .cell.marked {
+    background: var(--green-mid);
+    border-color: var(--green-mid);
+    color: white;
+    font-weight: 500;
+  }
+  .cell.free {
+    background: var(--green-dark);
+    border-color: var(--green-dark);
+    color: white;
+    font-weight: 500;
+    font-size: clamp(8px, 2vw, 10.5px);
+    cursor: default;
+  }
+  .cell.winning {
+    background: var(--gold) !important;
+    border-color: var(--gold) !important;
+    color: white !important;
+    animation: pulse 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.06); }
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+  }
+  .btn {
+    flex: 1;
+    max-width: 200px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--green-mid);
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-outline {
+    background: white;
+    color: var(--green-mid);
+  }
+  .btn-outline:active { background: var(--green-pale); }
+  .btn-primary {
+    background: var(--green-mid);
+    color: white;
+    border-color: var(--green-mid);
+  }
+  .btn-primary:active { background: var(--green-dark); }
+
+  .status-bar {
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.03em;
+    transition: all 0.3s;
+  }
+  .status-normal {
+    background: var(--green-pale);
+    color: var(--text-muted);
+  }
+  .status-bingo {
+    background: var(--gold);
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    animation: celebrate 0.4s ease;
+  }
+  @keyframes celebrate {
+    0% { transform: scale(0.95); }
+    50% { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+
+  .marked-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .footer {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 20px 20px 0;
+    font-family: 'DM Mono', monospace;
+    line-height: 1.7;
+  }
+
+  .confetti-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+    overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    opacity: 0;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Siemens · Sustainability Event</div>
+  <div class="header-title">🌏 Overshoot Day<br>Bingo</div>
+  <div class="header-sub">BBQ Sustainability Edition</div>
+</header>
+
+<div class="card-wrapper">
+  <div class="card-id-row">
+    <span class="card-id" id="cardId">Card #—</span>
+    <span class="instructions">Tap to mark · Get 5 in a row!</span>
+  </div>
+  <div class="bingo-letters" id="bingoLetters"></div>
+  <div class="bingo-grid" id="bingoGrid"></div>
+  <div class="status-bar status-normal" id="statusBar">Mark off the squares as they come up!</div>
+  <div class="btn-row">
+    <button class="btn btn-outline" onclick="resetCard()">Reset</button>
+    <button class="btn btn-primary" onclick="newCard()">New Card</button>
+  </div>
+  <div class="marked-count" id="markedCount">0 / 24 marked</div>
+</div>
+
+<div class="footer">
+  Japan's Earth Overshoot Day: ~May 12<br>
+  Siemens DEGREE Framework · Net Zero 2030
+</div>
+
+<div class="confetti-container" id="confetti"></div>
+
+<script>
+const POOL = [
+  "Earth\nOvershoot\nDay","Ecological\nFootprint","Biocapacity","CO₂\nEmissions","Renewable\nEnergy",
+  "Circular\nEconomy","Mottainai\nもったいない","Net Zero\n2050","3R: Reduce\nReuse Recycle","Solar\nEnergy",
+  "Wind\nEnergy","Green\nHydrogen","Biodiversity\nLoss","Food\nWaste","Smart\nGrid",
+  "Carbon\nNeutrality","Satoyama\n里山","Energy\nEfficiency","E-Mobility","Ocean\nProtection",
+  "Deforestation","Japan\nOvershoot\n~May 12","1.5°C\nTarget","IPCC\nReport","Green\nBuilding",
+  "Kaizen\nfor Climate","Water\nScarcity","Fast\nFashion","Scope 3\nEmissions","Science-Based\nTargets",
+  "Geothermal\nEnergy","DEGREE\nFramework","Carbon\nOffset","LCA\nAnalysis","ESG\nReporting",
+  "Supply Chain\nTransparency","Heat\nPump","Battery\nStorage","Micro-\nplastics","Urban\nFarming",
+  "Green\nFinance","Overshoot\nDay 1971","Resource\nOveruse","Biomass\nEnergy","Climate\nAction",
+  "Planetary\nBoundaries","Zero Waste\nJapan","Net Zero\n2030 Siemens","CO₂\nper Capita","Emissions\nTrading"
+];
+
+let cells = [];
+let cardNum = 0;
+
+function shuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateCard(seed) {
+  return shuffle(POOL, seed).slice(0, 25);
+}
+
+function renderCard(seed) {
+  cardNum = seed % 9999 + 1;
+  document.getElementById('cardId').textContent = `Card #${String(cardNum).padStart(4,'0')}`;
+
+  const letters = document.getElementById('bingoLetters');
+  letters.innerHTML = '';
+  ['B','I','N','G','O'].forEach(l => {
+    const d = document.createElement('div');
+    d.className = 'b-letter';
+    d.textContent = l;
+    letters.appendChild(d);
+  });
+
+  const grid = document.getElementById('bingoGrid');
+  grid.innerHTML = '';
+  cells = [];
+
+  const items = generateCard(seed);
+  items.forEach((text, i) => {
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.textContent = text;
+    c.onclick = () => toggleCell(c);
+    c.dataset.index = i;
+    grid.appendChild(c);
+    cells.push(c);
+  });
+
+  updateStatus();
+}
+
+function toggleCell(c) {
+  if (c.dataset.free) return;
+  c.classList.toggle('marked');
+  updateStatus();
+}
+
+function updateStatus() {
+  const grid = cells.map(c => c.classList.contains('marked'));
+  const wins = checkBingo(grid);
+  const markedCount = grid.filter(Boolean).length;
+  document.getElementById('markedCount').textContent = `${markedCount} / 25 marked`;
+
+  cells.forEach((c, i) => c.classList.remove('winning'));
+
+  const bar = document.getElementById('statusBar');
+  if (wins.length > 0) {
+    bar.className = 'status-bar status-bingo';
+    bar.textContent = '🎉 BINGO! You win!';
+    wins.flat().forEach(i => cells[i].classList.add('winning'));
+    if (!bar.dataset.celebrated) {
+      bar.dataset.celebrated = '1';
+      launchConfetti();
+    }
+  } else {
+    bar.className = 'status-bar status-normal';
+    bar.removeAttribute('data-celebrated');
+    const remaining = 5 - Math.max(...getLines().map(line => line.filter(i => grid[i]).length));
+    bar.textContent = remaining <= 2 ? `Only ${remaining} away from BINGO!` : `Mark off the squares as they come up!`;
+  }
+}
+
+function getLines() {
+  const lines = [];
+  for (let r = 0; r < 5; r++) lines.push([0,1,2,3,4].map(c => r*5+c));
+  for (let c = 0; c < 5; c++) lines.push([0,1,2,3,4].map(r => r*5+c));
+  lines.push([0,6,12,18,24]);
+  lines.push([4,8,12,16,20]);
+  return lines;
+}
+
+function checkBingo(grid) {
+  return getLines().filter(line => line.every(i => grid[i]));
+}
+
+function resetCard() {
+  cells.forEach(c => {
+    if (!c.dataset.free) c.classList.remove('marked', 'winning');
+  });
+  updateStatus();
+}
+
+function newCard() {
+  renderCard(Math.floor(Math.random() * 1000000));
+}
+
+function launchConfetti() {
+  const container = document.getElementById('confetti');
+  container.innerHTML = '';
+  const colors = ['#2ebb72','#c9a227','#1a7a4a','#ffffff','#0a4a2e'];
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = '-10px';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    p.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    p.style.animationDelay = (Math.random() * 0.8) + 's';
+    container.appendChild(p);
+  }
+  setTimeout(() => container.innerHTML = '', 4000);
+}
+
+renderCard(Math.floor(Math.random() * 1000000));
+</script>
+</body>
+</html>
